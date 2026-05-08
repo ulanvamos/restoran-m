@@ -7,6 +7,8 @@ class Restaurant {
   final double rating;
   final double latitude;
   final double longitude;
+  final String videoUrl;
+  final int cancellationDeadlineHours;
 
   Restaurant({
     required this.id,
@@ -17,6 +19,8 @@ class Restaurant {
     required this.rating,
     required this.latitude,
     required this.longitude,
+    required this.videoUrl,
+    this.cancellationDeadlineHours = 8,
   });
 
   factory Restaurant.fromJson(Map<String, dynamic> json) {
@@ -29,6 +33,8 @@ class Restaurant {
       rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
       latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,
       longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
+      videoUrl: json['video_url'] as String? ?? '',
+      cancellationDeadlineHours: (json['cancellation_deadline_hours'] as num?)?.toInt() ?? 8,
     );
   }
 }

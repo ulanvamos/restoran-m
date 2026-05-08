@@ -32,3 +32,33 @@ final restaurantReviewsProvider = FutureProvider.family<List<Review>, String>((r
       
   return (response as List).map((json) => Review.fromJson(json)).toList();
 });
+
+class ReelData {
+  final String videoUrl;
+  final String restaurantId;
+  ReelData({required this.videoUrl, required this.restaurantId});
+}
+
+final reelsProvider = FutureProvider<List<ReelData>>((ref) async {
+  final List<FileObject> files = await Supabase.instance.client
+      .storage
+      .from('restaurant-videos')
+      .list();
+      
+  final List<ReelData> reels = [];
+  for (final file in files) {
+    if (file.name.endsWith('.mp4')) {
+      final restaurantId = file.name.replaceAll('.mp4', '');
+      final videoUrl = Supabase.instance.client
+          .storage
+          .from('restaurant-videos')
+          .getPublicUrl(file.name);
+          
+      reels.add(ReelData(
+        videoUrl: videoUrl,
+        restaurantId: restaurantId,
+      ));
+    }
+  }
+  return reels;
+});

@@ -10,6 +10,7 @@ import '../domain/restaurant_model.dart';
 import '../domain/menu_item_model.dart';
 import '../domain/review_model.dart';
 import 'discover_controller.dart';
+import 'reservation_screen.dart';
 
 class RestaurantDetailScreen extends ConsumerWidget {
   final Restaurant restaurant;
@@ -73,7 +74,7 @@ class RestaurantDetailScreen extends ConsumerWidget {
           ),
         ),
       ),
-      floatingActionButton: _buildReservationButton(),
+      floatingActionButton: _buildReservationButton(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
@@ -633,7 +634,7 @@ class RestaurantDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildReservationButton() {
+  Widget _buildReservationButton(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Container(
@@ -651,7 +652,11 @@ class RestaurantDetailScreen extends ConsumerWidget {
         ),
         child: ElevatedButton(
           onPressed: () {
-            // TODO: Navigate to reservation flow
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => ReservationScreen(restaurant: restaurant),
+              ),
+            );
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primary,
