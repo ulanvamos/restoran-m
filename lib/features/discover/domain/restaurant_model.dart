@@ -11,6 +11,7 @@ class Restaurant {
   final int cancellationDeadlineHours;
   final String? chefName;
   final String? chefDetails;
+  final String? chefImageUrl;
   final Map<String, dynamic>? serviceHours;
   final Map<String, dynamic>? facilities;
 
@@ -27,6 +28,7 @@ class Restaurant {
     this.cancellationDeadlineHours = 8,
     this.chefName,
     this.chefDetails,
+    this.chefImageUrl,
     this.serviceHours,
     this.facilities,
   });
@@ -45,6 +47,7 @@ class Restaurant {
       cancellationDeadlineHours: (json['cancellation_deadline_hours'] as num?)?.toInt() ?? 8,
       chefName: json['chef_name'] as String?,
       chefDetails: json['chef_details'] as String?,
+      chefImageUrl: json['chef_image_url'] as String?,
       serviceHours: json['service_hours'] != null ? Map<String, dynamic>.from(json['service_hours'] as Map) : null,
       facilities: json['facilities'] != null ? Map<String, dynamic>.from(json['facilities'] as Map) : null,
     );

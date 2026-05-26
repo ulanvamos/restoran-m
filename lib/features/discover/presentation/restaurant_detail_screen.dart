@@ -533,8 +533,12 @@ class RestaurantDetailScreen extends ConsumerWidget {
           ),
           clipBehavior: Clip.antiAlias,
           child: CachedNetworkImage(
-            imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA7nuCKc6KhX5r_O4X6srYhLeLMmC_L7nlpPaR6Ufro5aIxqilnORcZGeqSuOSmlU4w0TXbofRFEPvzaTgXh9soYgXszX00YBPP3A4KX7Ky-j6F7GCIOslvmdnwR4U8pj7JTQcCACGkK-Drn1Ddx2ImiRAeyRSFYLsT3-1DAvTzdq2PBVnsCO10vM2pcVmstlhJaCyikOlfPU8hVeZ5gW7lgpqUIytvY8BLKoy-_QX2eqSqmzPZWoiD36hwpL1MJVZKZ6v0C_xAPOJT',
+            imageUrl: (restaurant.chefImageUrl != null && restaurant.chefImageUrl!.isNotEmpty)
+                ? restaurant.chefImageUrl!
+                : 'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=600&q=80',
             fit: BoxFit.cover,
+            placeholder: (context, url) => Container(color: AppColors.divider.withAlpha(30), child: const Center(child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2))),
+            errorWidget: (context, url, error) => const Icon(Icons.person, color: AppColors.textSecondary, size: 60),
           ),
         ),
       ],
@@ -542,8 +546,6 @@ class RestaurantDetailScreen extends ConsumerWidget {
   }
 
   Widget _buildReviewsTab(AsyncValue<List<Review>> reviewsAsync) {
-    final mockUsers = ['Lezzet Tutkunu', 'Gurme Gezgin', 'Gastronomi Aşığı', 'Anonim Misafir'];
-    
     return reviewsAsync.when(
       data: (reviews) {
         if (reviews.isEmpty) {
@@ -562,10 +564,10 @@ class RestaurantDetailScreen extends ConsumerWidget {
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
                     final review = reviews[index];
-                    final mockName = mockUsers[index % mockUsers.length];
+                    final reviewerName = review.reviewerName ?? 'Anonim Misafir';
                     return Column(
                       children: [
-                        _buildReviewItem(review, mockName).animate().fade().slideY(begin: 0.05),
+                        _buildReviewItem(review, reviewerName).animate().fade().slideY(begin: 0.05),
                         if (index < reviews.length - 1)
                           Padding(
                             padding: const EdgeInsets.symmetric(vertical: 24.0),
@@ -587,6 +589,7 @@ class RestaurantDetailScreen extends ConsumerWidget {
   }
 
   Widget _buildReviewItem(Review review, String authorName) {
+    final initials = authorName.isNotEmpty ? authorName.substring(0, 1).toUpperCase() : '?';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -598,15 +601,20 @@ class RestaurantDetailScreen extends ConsumerWidget {
                 CircleAvatar(
                   backgroundColor: AppColors.divider.withAlpha(80),
                   radius: 18,
-                  child: Text(
-                    authorName.substring(0, 1),
-                    style: const TextStyle(
-                      color: AppColors.primary, 
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Inter',
-                      fontSize: 14,
-                    ),
-                  ),
+                  backgroundImage: (review.reviewerAvatar != null && review.reviewerAvatar!.isNotEmpty)
+                      ? CachedNetworkImageProvider(review.reviewerAvatar!)
+                      : null,
+                  child: (review.reviewerAvatar == null || review.reviewerAvatar!.isEmpty)
+                      ? Text(
+                          initials,
+                          style: const TextStyle(
+                            color: AppColors.primary, 
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Inter',
+                            fontSize: 14,
+                          ),
+                        )
+                      : null,
                 ),
                 const SizedBox(width: 12),
                 Column(

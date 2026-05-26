@@ -27,7 +27,7 @@ final restaurantMenusProvider = FutureProvider.autoDispose.family<List<MenuItem>
 final restaurantReviewsProvider = FutureProvider.autoDispose.family<List<Review>, String>((ref, restaurantId) async {
   final response = await Supabase.instance.client
       .from('reviews')
-      .select()
+      .select('*, users(full_name, avatar_url)')
       .eq('restaurant_id', restaurantId)
       .order('created_at', ascending: false);
       
