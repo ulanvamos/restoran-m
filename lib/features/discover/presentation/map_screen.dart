@@ -73,7 +73,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                             width: 48,
                             height: 48,
                             decoration: BoxDecoration(
-                              color: Colors.blue.withOpacity(0.2),
+                              color: Colors.blue.withValues(alpha: 0.2),
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -86,7 +86,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                               border: Border.all(color: Colors.white, width: 2),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.blue.withOpacity(0.5),
+                                  color: Colors.blue.withValues(alpha: 0.5),
                                   blurRadius: 10,
                                 ),
                               ],
@@ -168,12 +168,12 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   boxShadow: [
                     if (isSelected)
                       BoxShadow(
-                        color: Colors.white.withOpacity(0.5),
+                        color: Colors.white.withValues(alpha: 0.5),
                         blurRadius: 0,
                         spreadRadius: 2,
                       ),
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
+                      color: Colors.black.withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -214,9 +214,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         bottom: 16,
       ),
       decoration: BoxDecoration(
-        color: AppColors.background.withOpacity(0.95),
+        color: AppColors.background.withValues(alpha: 0.95),
         border: Border(
-          bottom: BorderSide(color: AppColors.divider.withOpacity(0.5)),
+          bottom: BorderSide(color: AppColors.divider.withValues(alpha: 0.5)),
         ),
       ),
       child: Row(
@@ -258,10 +258,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.divider.withOpacity(0.3)),
+        border: Border.all(color: AppColors.divider.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.12),
+            color: Colors.black.withValues(alpha: 0.12),
             blurRadius: 50,
             offset: const Offset(0, 20),
           ),

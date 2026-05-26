@@ -80,7 +80,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: AppColors.primary.withOpacity(0.2),
+                        color: AppColors.primary.withValues(alpha: 0.2),
                         width: 1.0,
                       ),
                     ),
@@ -105,7 +105,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   'HESAP OLUŞTUR',
                   style: AppTextStyles.headline.copyWith(
                     fontSize: 12,
-                    color: AppColors.primary.withOpacity(0.6),
+                    color: AppColors.primary.withValues(alpha: 0.6),
                     letterSpacing: 4.0,
                   ),
                   textAlign: TextAlign.center,
@@ -221,7 +221,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 // Tagline
                 Text(
                   'Yerinde ve zamanında lezzet',
-                  style: AppTextStyles.tagline.copyWith(fontSize: 12, color: AppColors.textSecondary.withOpacity(0.6)),
+                  style: AppTextStyles.tagline.copyWith(fontSize: 12, color: AppColors.textSecondary.withValues(alpha: 0.6)),
                   textAlign: TextAlign.center,
                 ).animate().fade(delay: 1050.ms),
               ],
@@ -262,17 +262,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
       style: const TextStyle(fontSize: 14, color: AppColors.primary),
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: TextStyle(color: AppColors.textSecondary.withOpacity(0.4)),
+        hintStyle: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.4)),
         filled: true,
         fillColor: Colors.white,
         contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(9999),
-          borderSide: BorderSide(color: AppColors.divider.withOpacity(0.3)),
+          borderSide: BorderSide(color: AppColors.divider.withValues(alpha: 0.3)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(9999),
-          borderSide: BorderSide(color: AppColors.divider.withOpacity(0.3)),
+          borderSide: BorderSide(color: AppColors.divider.withValues(alpha: 0.3)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(9999),

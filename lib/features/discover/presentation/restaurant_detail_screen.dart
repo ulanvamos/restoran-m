@@ -52,6 +52,8 @@ class RestaurantDetailScreen extends ConsumerWidget {
                             _buildMiniMap(),
                             const SizedBox(height: 40),
                             _buildAboutSection(),
+                            const SizedBox(height: 40),
+                            _buildServiceDetailsSection(),
                             const SizedBox(height: 48),
                             _buildTastingMenusSection(menusAsync),
                             const SizedBox(height: 48),
@@ -323,104 +325,169 @@ class RestaurantDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildTastingMenusSection(AsyncValue<List<MenuItem>> menusAsync) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionTitle('Tadım Menüleri'),
-        const SizedBox(height: 24),
-        menusAsync.when(
-          data: (menus) {
-            if (menus.isEmpty) {
-              return const Text('Şu an için listelenecek menü bulunmuyor.', style: TextStyle(color: AppColors.textSecondary));
-            }
-            return ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: menus.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 32),
-              itemBuilder: (context, index) {
-                final menu = menus[index];
-                return _buildMenuCard(menu);
-              },
-            );
-          },
-          loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
-          error: (err, _) => Text('Menüler yüklenemedi.', style: const TextStyle(color: Colors.red)),
-        ),
-      ],
-    );
-  }
+  Widget _buildServiceDetailsSection() {
+    final serviceHours = restaurant.serviceHours;
+    final lunchStart = serviceHours?['lunch_start'] as String?;
+    final lunchEnd = serviceHours?['lunch_end'] as String?;
+    final dinnerStart = serviceHours?['dinner_start'] as String?;
+    final dinnerEnd = serviceHours?['dinner_end'] as String?;
 
-  Widget _buildMenuCard(MenuItem menu) {
+    final lunchHours = (lunchStart != null && lunchEnd != null)
+        ? '$lunchStart - $lunchEnd'
+        : '12:00 - 15:00';
+    final dinnerHours = (dinnerStart != null && dinnerEnd != null)
+        ? '$dinnerStart - $dinnerEnd'
+        : '19:00 - 23:00';
+
+    final facilities = restaurant.facilities;
+    final hasValet = facilities?['valet'] as bool? ?? false;
+    final hasTasting = facilities?['tasting_menu'] as bool? ?? false;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: double.infinity,
-          height: 220,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: CachedNetworkImage(
-            imageUrl: menu.imageUrl,
-            fit: BoxFit.cover,
-            placeholder: (context, url) => Container(color: AppColors.divider.withAlpha(50)),
-            errorWidget: (context, url, error) => Container(color: AppColors.divider.withAlpha(50), child: const Icon(Icons.image_not_supported, color: AppColors.textSecondary)),
-          ),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          'ÖZEL SEÇKİ',
-          style: const TextStyle(
-            fontFamily: 'Manrope',
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 2.0,
-            color: AppColors.textSecondary,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          menu.name.toUpperCase(),
-          style: AppTextStyles.headline.copyWith(
-            fontSize: 20,
-            letterSpacing: -0.5,
-            color: AppColors.primary,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Text(
-          menu.description,
-          style: const TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 13,
-            height: 1.5,
-            color: AppColors.textSecondary,
-          ),
-        ),
-        const SizedBox(height: 16),
+        _buildSectionTitle('Servis ve Hizmetler'),
+        const SizedBox(height: 20),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              '₺${menu.price.toStringAsFixed(0)}',
-              style: const TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: AppColors.primary,
+            // Çalışma Saatleri
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'ÇALIŞMA SAATLERİ',
+                    style: TextStyle(
+                      fontFamily: 'Manrope',
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2.0,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildServiceHourRow('Öğle Servisi', lunchHours),
+                  const SizedBox(height: 12),
+                  _buildServiceHourRow('Akşam Servisi', dinnerHours),
+                ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios, color: AppColors.primary, size: 14),
+            const SizedBox(width: 24),
+            // Hizmetler
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'HİZMETLER',
+                    style: TextStyle(
+                      fontFamily: 'Manrope',
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2.0,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildFacilityRow('Vale Hizmeti', hasValet),
+                  const SizedBox(height: 12),
+                  _buildFacilityRow('Tadım Menüsü', hasTasting),
+                ],
+              ),
+            ),
           ],
         ),
       ],
     );
   }
 
+  Widget _buildServiceHourRow(String label, String hours) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Icon(Icons.access_time, color: AppColors.textSecondary, size: 14),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                hours,
+                style: const TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 13,
+                  color: AppColors.primary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFacilityRow(String label, bool isAvailable) {
+    return Row(
+      children: [
+        Icon(
+          isAvailable ? Icons.check : Icons.close,
+          color: isAvailable ? Colors.green : AppColors.textSecondary,
+          size: 16,
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 13,
+              color: isAvailable ? AppColors.primary : AppColors.textSecondary,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTastingMenusSection(AsyncValue<List<MenuItem>> menusAsync) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle('Restoran Menüsü'),
+        const SizedBox(height: 24),
+        menusAsync.when(
+          data: (menus) {
+            if (menus.isEmpty) {
+              return const Text('Şu an için listelenecek menü bulunmuyor.', style: TextStyle(color: AppColors.textSecondary));
+            }
+            return _MenuSectionWidget(menus: menus);
+          },
+          loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+          error: (err, _) => const Text('Menüler yüklenemedi.', style: TextStyle(color: Colors.red)),
+        ),
+      ],
+    );
+  }
   Widget _buildChefsNoteSection() {
+    final quote = (restaurant.chefDetails != null && restaurant.chefDetails!.trim().isNotEmpty)
+        ? '"${restaurant.chefDetails}"'
+        : '"Gerçek lüks, tabağın içindeki sadeliğin ardındaki emeği hissetmektir."';
+
+    final name = (restaurant.chefName != null && restaurant.chefName!.trim().isNotEmpty)
+        ? '— ${restaurant.chefName!.toUpperCase()}'
+        : '— BAŞŞEF SİMAN ÖRS';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -436,7 +503,7 @@ class RestaurantDetailScreen extends ConsumerWidget {
         ),
         const SizedBox(height: 16),
         Text(
-          '"Gerçek lüks, tabağın içindeki sadeliğin ardındaki emeği hissetmektir."',
+          quote,
           style: AppTextStyles.headline.copyWith(
             fontSize: 22,
             fontStyle: FontStyle.italic,
@@ -448,7 +515,7 @@ class RestaurantDetailScreen extends ConsumerWidget {
         ),
         const SizedBox(height: 16),
         Text(
-          '— BAŞŞEF SİMAN ÖRS',
+          name,
           style: const TextStyle(
             fontFamily: 'Inter',
             fontSize: 10,
@@ -680,5 +747,174 @@ class RestaurantDetailScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+class _MenuSectionWidget extends StatefulWidget {
+  final List<MenuItem> menus;
+
+  const _MenuSectionWidget({required this.menus});
+
+  @override
+  State<_MenuSectionWidget> createState() => _MenuSectionWidgetState();
+}
+
+class _MenuSectionWidgetState extends State<_MenuSectionWidget> {
+  int _selectedCategoryIndex = 0;
+  final List<String> _categories = ['Tümü', 'Başlangıçlar', 'Ana Yemekler', 'Tatlılar', 'İçecekler'];
+
+  @override
+  Widget build(BuildContext context) {
+    final filteredMenus = widget.menus.where((item) {
+      if (_selectedCategoryIndex == 0) return true;
+      return item.category.toLowerCase() == _categories[_selectedCategoryIndex].toLowerCase();
+    }).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          height: 36,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            itemCount: _categories.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemBuilder: (context, index) {
+              final isSelected = _selectedCategoryIndex == index;
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _selectedCategoryIndex = index;
+                  });
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppColors.primary : Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: isSelected ? AppColors.primary : AppColors.divider.withAlpha(100),
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    _categories[index].toUpperCase(),
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.0,
+                      color: isSelected ? AppColors.background : AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 32),
+        if (filteredMenus.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 32),
+            child: Center(
+              child: Text(
+                'Bu kategoride henüz aktif ürün bulunmuyor.',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 13,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
+          )
+        else
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: filteredMenus.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 32),
+            itemBuilder: (context, index) {
+              final menu = filteredMenus[index];
+              return _buildMenuCard(menu);
+            },
+          ),
+      ],
+    );
+  }
+
+  Widget _buildMenuCard(MenuItem menu) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: double.infinity,
+          height: 220,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: CachedNetworkImage(
+            imageUrl: menu.imageUrl,
+            fit: BoxFit.cover,
+            placeholder: (context, url) => Container(color: AppColors.divider.withAlpha(50)),
+            errorWidget: (context, url, error) => Container(
+              color: AppColors.divider.withAlpha(50), 
+              child: const Icon(Icons.image_not_supported, color: AppColors.textSecondary)
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          menu.category.toUpperCase(),
+          style: const TextStyle(
+            fontFamily: 'Manrope',
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 2.0,
+            color: AppColors.textSecondary,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          menu.name.toUpperCase(),
+          style: AppTextStyles.headline.copyWith(
+            fontSize: 20,
+            letterSpacing: -0.5,
+            color: AppColors.primary,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          menu.description,
+          style: const TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 13,
+            height: 1.5,
+            color: AppColors.textSecondary,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '₺${menu.price.toStringAsFixed(0)}',
+              style: const TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppColors.primary,
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios, color: AppColors.primary, size: 14),
+          ],
+        ),
+      ],
+    );
+  }
+
+
+
 }
 

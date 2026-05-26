@@ -108,3 +108,4 @@ Aşağıdaki kod parçacığı uygulamanın Splash / Karşılama ekranı için S
 </body>
 </html>
 ```
+  masa

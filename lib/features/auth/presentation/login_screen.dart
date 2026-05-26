@@ -78,7 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: AppColors.primary.withOpacity(0.2),
+                      color: AppColors.primary.withValues(alpha: 0.2),
                       width: 1.0,
                     ),
                   ),
@@ -89,7 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: AppColors.primary.withOpacity(0.5),
+                          color: AppColors.primary.withValues(alpha: 0.5),
                           width: 1.0,
                         ),
                       ),
@@ -127,14 +127,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: const TextStyle(fontSize: 14, color: AppColors.primary),
                   decoration: InputDecoration(
                     hintText: 'E-posta veya Kullanıcı Adı',
-                    hintStyle: TextStyle(color: AppColors.textSecondary.withOpacity(0.5)),
+                    hintStyle: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.5)),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(9999),
-                      borderSide: BorderSide(color: AppColors.divider.withOpacity(0.3)),
+                      borderSide: BorderSide(color: AppColors.divider.withValues(alpha: 0.3)),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(9999),
-                      borderSide: BorderSide(color: AppColors.divider.withOpacity(0.3)),
+                      borderSide: BorderSide(color: AppColors.divider.withValues(alpha: 0.3)),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(9999),
@@ -159,14 +159,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: const TextStyle(fontSize: 14, color: AppColors.primary),
                   decoration: InputDecoration(
                     hintText: 'Şifre',
-                    hintStyle: TextStyle(color: AppColors.textSecondary.withOpacity(0.5)),
+                    hintStyle: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.5)),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(9999),
-                      borderSide: BorderSide(color: AppColors.divider.withOpacity(0.3)),
+                      borderSide: BorderSide(color: AppColors.divider.withValues(alpha: 0.3)),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(9999),
-                      borderSide: BorderSide(color: AppColors.divider.withOpacity(0.3)),
+                      borderSide: BorderSide(color: AppColors.divider.withValues(alpha: 0.3)),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(9999),
@@ -245,7 +245,7 @@ class _LoginScreenState extends State<LoginScreen> {
               // Tagline
               Text(
                 'Yerinde ve zamanında lezzet',
-                style: AppTextStyles.tagline.copyWith(fontSize: 12, color: AppColors.textSecondary.withOpacity(0.5)),
+                style: AppTextStyles.tagline.copyWith(fontSize: 12, color: AppColors.textSecondary.withValues(alpha: 0.5)),
                 textAlign: TextAlign.center,
               ).animate().fade(delay: 900.ms),
             ],

@@ -5,6 +5,8 @@ import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../domain/restaurant_model.dart';
+import '../domain/table_model.dart';
+import 'discover_controller.dart';
 
 class ReservationScreen extends ConsumerStatefulWidget {
   final Restaurant restaurant;
@@ -19,16 +21,10 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   int _guestCount = 2;
-  String? _selectedTable;
+  RestaurantTable? _selectedTable;
   bool _wantsVipTransport = false;
   bool _wantsPreOrder = false;
   bool _isSubmitting = false;
-
-  final List<String> _mockTables = [
-    'Cam Kenarı 1', 'Cam Kenarı 2', 'Cam Kenarı 3',
-    'Masa 1', 'Masa 2', 'Masa 3', 'Masa 4',
-    'VIP 1', 'VIP 2'
-  ];
 
   @override
   void initState() {
@@ -129,7 +125,8 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
         'status': 'pending',
         'wants_vip_transport': _wantsVipTransport,
         'wants_pre_order': _wantsPreOrder,
-        'selected_table_name': _selectedTable,
+        'selected_table_name': 'Masa ${_selectedTable!.tableNumber} (${_selectedTable!.section})',
+        'table_id': _selectedTable!.id,
       });
 
       if (mounted) {
@@ -278,70 +275,159 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                        childAspectRatio: 1.2,
-                      ),
-                      itemCount: _mockTables.length,
-                      itemBuilder: (context, index) {
-                        final table = _mockTables[index];
-                        final isSelected = _selectedTable == table;
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _selectedTable = table;
-                            });
-                          },
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            decoration: BoxDecoration(
-                              color: isSelected ? AppColors.primary : AppColors.background,
-                              border: Border.all(
-                                color: isSelected ? AppColors.primary : AppColors.divider.withAlpha(100),
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            alignment: Alignment.center,
+                    ref.watch(restaurantTablesProvider(widget.restaurant.id)).when(
+                      data: (tables) {
+                        if (tables.isEmpty) {
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 24),
                             child: Text(
-                              table,
-                              textAlign: TextAlign.center,
+                              'Rezervasyon yapılabilecek masa bulunamadı.',
                               style: TextStyle(
                                 fontFamily: 'Inter',
-                                fontSize: 12,
-                                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                                color: isSelected ? AppColors.background : AppColors.primary,
+                                fontSize: 13,
+                                color: AppColors.textSecondary,
                               ),
                             ),
+                          );
+                        }
+                        return GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                            childAspectRatio: 1.1,
                           ),
+                          itemCount: tables.length,
+                          itemBuilder: (context, index) {
+                            final table = tables[index];
+                            final isSelected = _selectedTable?.id == table.id;
+                            final isOccupiedOrReserved = table.status == 'occupied' || table.status == 'reserved';
+                            
+                            return GestureDetector(
+                              onTap: isOccupiedOrReserved ? null : () {
+                                setState(() {
+                                  _selectedTable = table;
+                                });
+                              },
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                decoration: BoxDecoration(
+                                  color: isSelected 
+                                      ? AppColors.primary 
+                                      : (isOccupiedOrReserved ? AppColors.divider.withAlpha(128) : AppColors.background),
+                                  border: Border.all(
+                                    color: isSelected 
+                                        ? AppColors.primary 
+                                        : (isOccupiedOrReserved ? Colors.transparent : AppColors.divider.withAlpha(100)),
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                alignment: Alignment.center,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'Masa ${table.tableNumber}',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontFamily: 'Manrope',
+                                        fontSize: 13,
+                                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                                        color: isSelected 
+                                            ? AppColors.background 
+                                            : (isOccupiedOrReserved ? AppColors.textSecondary.withAlpha(120) : AppColors.primary),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '${table.capacity} Kişilik',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontFamily: 'Inter',
+                                        fontSize: 9,
+                                        color: isSelected 
+                                            ? AppColors.background.withAlpha(200) 
+                                            : (isOccupiedOrReserved ? AppColors.textSecondary.withAlpha(120) : AppColors.textSecondary),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      table.section.toUpperCase(),
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontFamily: 'Inter',
+                                        fontSize: 8,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 0.5,
+                                        color: isSelected 
+                                            ? AppColors.background.withAlpha(180) 
+                                            : (isOccupiedOrReserved ? AppColors.textSecondary.withAlpha(120) : AppColors.primary.withAlpha(150)),
+                                      ),
+                                    ),
+                                    if (isOccupiedOrReserved) ...[
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        table.status == 'occupied' ? 'DOLU' : 'REZERVE',
+                                        style: const TextStyle(
+                                          fontFamily: 'Inter',
+                                          fontSize: 8,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.red,
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
                         );
                       },
+                      loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+                      error: (err, _) => const Text('Masalar yüklenemedi.', style: TextStyle(color: Colors.red)),
                     ),
                     const SizedBox(height: 40),
 
-                    // Extra Options
-                    _buildSectionTitle('ÖZEL İSTEKLER'),
-                    const SizedBox(height: 16),
-                    _buildSwitchTile(
-                      title: 'VIP Araç İstiyorum',
-                      subtitle: 'Sizi bulunduğunuz konumdan alıp restorana bırakalım.',
-                      icon: Icons.directions_car_outlined,
-                      value: _wantsVipTransport,
-                      onChanged: (val) => setState(() => _wantsVipTransport = val),
-                    ),
-                    const SizedBox(height: 12),
-                    _buildSwitchTile(
-                      title: 'Masaya Ön Sipariş Oluştur',
-                      subtitle: 'Masaya oturduğunuz an siparişleriniz hazır olsun.',
-                      icon: Icons.restaurant_menu,
-                      value: _wantsPreOrder,
-                      onChanged: (val) => setState(() => _wantsPreOrder = val),
-                    ),
-                    const SizedBox(height: 40),
+                    // Extra Options dynamically bound to facilities
+                    () {
+                      final facilities = widget.restaurant.facilities;
+                      final hasValet = facilities?['valet'] as bool? ?? false;
+                      final hasTasting = facilities?['tasting_menu'] as bool? ?? false;
+
+                      if (hasValet || hasTasting) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildSectionTitle('ÖZEL İSTEKLER'),
+                            const SizedBox(height: 16),
+                            if (hasValet) ...[
+                              _buildSwitchTile(
+                                title: 'VIP Araç İstiyorum',
+                                subtitle: 'Sizi bulunduğunuz konumdan alıp restorana bırakalım.',
+                                icon: Icons.directions_car_outlined,
+                                value: _wantsVipTransport,
+                                onChanged: (val) => setState(() => _wantsVipTransport = val),
+                              ),
+                              const SizedBox(height: 12),
+                            ],
+                            if (hasTasting) ...[
+                              _buildSwitchTile(
+                                title: 'Masaya Ön Sipariş Oluştur',
+                                subtitle: 'Masaya oturduğunuz an siparişleriniz hazır olsun.',
+                                icon: Icons.restaurant_menu,
+                                value: _wantsPreOrder,
+                                onChanged: (val) => setState(() => _wantsPreOrder = val),
+                              ),
+                              const SizedBox(height: 12),
+                            ],
+                            const SizedBox(height: 28),
+                          ],
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    }(),
                   ],
                 ),
               ),

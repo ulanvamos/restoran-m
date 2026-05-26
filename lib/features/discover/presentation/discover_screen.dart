@@ -89,7 +89,7 @@ class DiscoverScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         color: AppColors.background,
         border: Border(
-          bottom: BorderSide(color: AppColors.divider.withOpacity(0.5), width: 1),
+          bottom: BorderSide(color: AppColors.divider.withValues(alpha: 0.5), width: 1),
         ),
       ),
       child: Row(
@@ -112,18 +112,18 @@ class DiscoverScreen extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(9999),
-                border: Border.all(color: AppColors.divider.withOpacity(0.3)),
+                border: Border.all(color: AppColors.divider.withValues(alpha: 0.3)),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
-                  Icon(Icons.search, color: AppColors.textSecondary.withOpacity(0.6), size: 20),
+                  Icon(Icons.search, color: AppColors.textSecondary.withValues(alpha: 0.6), size: 20),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'Restoran, şef veya mutfak ara',
                       style: GoogleFonts.inter(
-                        color: AppColors.textSecondary.withOpacity(0.6),
+                        color: AppColors.textSecondary.withValues(alpha: 0.6),
                         fontSize: 12,
                         letterSpacing: -0.2,
                       ),
@@ -241,7 +241,7 @@ class DiscoverScreen extends ConsumerWidget {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.06),
+            color: AppColors.primary.withValues(alpha: 0.06),
             blurRadius: 40,
             offset: const Offset(0, 20),
           ),
@@ -264,8 +264,8 @@ class DiscoverScreen extends ConsumerWidget {
                 end: Alignment.bottomCenter,
                 colors: [
                   Colors.transparent,
-                  AppColors.primary.withOpacity(0.2),
-                  AppColors.primary.withOpacity(0.9),
+                  AppColors.primary.withValues(alpha: 0.2),
+                  AppColors.primary.withValues(alpha: 0.9),
                 ],
                 stops: const [0.4, 0.7, 1.0],
               ),
@@ -297,7 +297,7 @@ class DiscoverScreen extends ConsumerWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Row(
@@ -334,14 +334,18 @@ class DiscoverScreen extends ConsumerWidget {
                   children: [
                     const Icon(Icons.location_on, color: Colors.white60, size: 14),
                     const SizedBox(width: 6),
-                    Text(
-                      location.toUpperCase(),
-                      style: const TextStyle(
-                        fontFamily: 'Inter',
-                        color: Colors.white60,
-                        fontSize: 10,
-                        letterSpacing: 1.5,
-                        fontWeight: FontWeight.w500,
+                    Expanded(
+                      child: Text(
+                        location.toUpperCase(),
+                        style: const TextStyle(
+                          fontFamily: 'Inter',
+                          color: Colors.white60,
+                          fontSize: 10,
+                          letterSpacing: 1.5,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],

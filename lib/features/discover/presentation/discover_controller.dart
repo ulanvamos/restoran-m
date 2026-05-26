@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../domain/restaurant_model.dart';
 import '../domain/menu_item_model.dart';
 import '../domain/review_model.dart';
+import '../domain/table_model.dart';
 
 final restaurantsProvider = FutureProvider<List<Restaurant>>((ref) async {
   final response = await Supabase.instance.client
@@ -13,17 +14,17 @@ final restaurantsProvider = FutureProvider<List<Restaurant>>((ref) async {
   return (response as List).map((json) => Restaurant.fromJson(json)).toList();
 });
 
-final restaurantMenusProvider = FutureProvider.family<List<MenuItem>, String>((ref, restaurantId) async {
+final restaurantMenusProvider = FutureProvider.autoDispose.family<List<MenuItem>, String>((ref, restaurantId) async {
   final response = await Supabase.instance.client
       .from('menu_items')
       .select()
       .eq('restaurant_id', restaurantId)
-      .eq('category', 'Tadım Menüleri');
+      .eq('is_available', true);
       
   return (response as List).map((json) => MenuItem.fromJson(json)).toList();
 });
 
-final restaurantReviewsProvider = FutureProvider.family<List<Review>, String>((ref, restaurantId) async {
+final restaurantReviewsProvider = FutureProvider.autoDispose.family<List<Review>, String>((ref, restaurantId) async {
   final response = await Supabase.instance.client
       .from('reviews')
       .select()
@@ -31,6 +32,22 @@ final restaurantReviewsProvider = FutureProvider.family<List<Review>, String>((r
       .order('created_at', ascending: false);
       
   return (response as List).map((json) => Review.fromJson(json)).toList();
+});
+
+final restaurantTablesProvider = FutureProvider.autoDispose.family<List<RestaurantTable>, String>((ref, restaurantId) async {
+  final response = await Supabase.instance.client
+      .from('tables')
+      .select()
+      .eq('restaurant_id', restaurantId);
+      
+  final list = (response as List).map((json) => RestaurantTable.fromJson(json)).toList();
+  // Sort table numbers numerically if possible
+  list.sort((a, b) {
+    final aNum = int.tryParse(a.tableNumber) ?? 999;
+    final bNum = int.tryParse(b.tableNumber) ?? 999;
+    return aNum.compareTo(bNum);
+  });
+  return list;
 });
 
 class ReelData {
