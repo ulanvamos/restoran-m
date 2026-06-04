@@ -14,6 +14,12 @@ class Restaurant {
   final String? chefImageUrl;
   final Map<String, dynamic>? serviceHours;
   final Map<String, dynamic>? facilities;
+  final String? phoneNumber;
+  final String? email;
+  final String? website;
+  final String? instagram;
+  final String? facebook;
+  final String? twitter;
 
   Restaurant({
     required this.id,
@@ -31,6 +37,12 @@ class Restaurant {
     this.chefImageUrl,
     this.serviceHours,
     this.facilities,
+    this.phoneNumber,
+    this.email,
+    this.website,
+    this.instagram,
+    this.facebook,
+    this.twitter,
   });
 
   factory Restaurant.fromJson(Map<String, dynamic> json) {
@@ -50,6 +62,12 @@ class Restaurant {
       chefImageUrl: json['chef_image_url'] as String?,
       serviceHours: json['service_hours'] != null ? Map<String, dynamic>.from(json['service_hours'] as Map) : null,
       facilities: json['facilities'] != null ? Map<String, dynamic>.from(json['facilities'] as Map) : null,
+      phoneNumber: json['phone_number'] as String?,
+      email: json['email'] as String?,
+      website: json['website'] as String?,
+      instagram: json['instagram'] as String?,
+      facebook: json['facebook'] as String?,
+      twitter: json['twitter'] as String?,
     );
   }
 }

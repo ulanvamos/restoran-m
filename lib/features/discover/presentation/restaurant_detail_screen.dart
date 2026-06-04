@@ -25,7 +25,7 @@ class RestaurantDetailScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: DefaultTabController(
-        length: 2,
+        length: 3,
         child: NestedScrollView(
           physics: const BouncingScrollPhysics(),
           headerSliverBuilder: (context, innerBoxIsScrolled) {
@@ -54,8 +54,8 @@ class RestaurantDetailScreen extends ConsumerWidget {
                             _buildAboutSection(),
                             const SizedBox(height: 40),
                             _buildServiceDetailsSection(),
-                            const SizedBox(height: 48),
-                            _buildTastingMenusSection(menusAsync),
+                            const SizedBox(height: 40),
+                            _buildContactAndSocialSection(),
                             const SizedBox(height: 48),
                             _buildChefsNoteSection(),
                             const SizedBox(height: 120), // Buton boşluğu
@@ -66,7 +66,27 @@ class RestaurantDetailScreen extends ConsumerWidget {
                   );
                 }
               ),
-              // Sekme 2: Yorumlar
+              // Sekme 2: Menü
+              Builder(
+                builder: (context) {
+                  return CustomScrollView(
+                    key: const PageStorageKey<String>('menu_tab'),
+                    physics: const BouncingScrollPhysics(),
+                    slivers: [
+                      SliverPadding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+                        sliver: SliverList(
+                          delegate: SliverChildListDelegate([
+                            _buildTastingMenusSection(menusAsync),
+                            const SizedBox(height: 120), // Buton boşluğu
+                          ]),
+                        ),
+                      ),
+                    ],
+                  );
+                }
+              ),
+              // Sekme 3: Yorumlar
               Builder(
                 builder: (context) {
                   return _buildReviewsTab(reviewsAsync);
@@ -157,6 +177,7 @@ class RestaurantDetailScreen extends ConsumerWidget {
                 ),
                 tabs: [
                   Tab(text: 'DETAYLAR'),
+                  Tab(text: 'MENÜ'),
                   Tab(text: 'YORUMLAR'),
                 ],
               ),
@@ -479,6 +500,126 @@ class RestaurantDetailScreen extends ConsumerWidget {
       ],
     );
   }
+  Widget _buildContactAndSocialSection() {
+    final phone = restaurant.phoneNumber;
+    final email = restaurant.email;
+    final website = restaurant.website;
+    final instagram = restaurant.instagram;
+    final facebook = restaurant.facebook;
+    final twitter = restaurant.twitter;
+
+    final hasContact = (phone != null && phone.isNotEmpty) ||
+        (email != null && email.isNotEmpty) ||
+        (website != null && website.isNotEmpty);
+
+    final hasSocial = (instagram != null && instagram.isNotEmpty) ||
+        (facebook != null && facebook.isNotEmpty) ||
+        (twitter != null && twitter.isNotEmpty);
+
+    if (!hasContact && !hasSocial) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle('İletişim ve Sosyal Medya'),
+        const SizedBox(height: 20),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // İletişim Bilgileri
+            if (hasContact)
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'İLETİŞİM',
+                      style: TextStyle(
+                        fontFamily: 'Manrope',
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2.0,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    if (phone != null && phone.isNotEmpty) ...[
+                      _buildContactRow(Icons.phone, phone),
+                      const SizedBox(height: 12),
+                    ],
+                    if (email != null && email.isNotEmpty) ...[
+                      _buildContactRow(Icons.mail, email),
+                      const SizedBox(height: 12),
+                    ],
+                    if (website != null && website.isNotEmpty) ...[
+                      _buildContactRow(Icons.language, website),
+                    ],
+                  ],
+                ),
+              ),
+            if (hasContact && hasSocial) const SizedBox(width: 24),
+            // Sosyal Medya
+            if (hasSocial)
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'SOSYAL MEDYA',
+                      style: TextStyle(
+                        fontFamily: 'Manrope',
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2.0,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    if (instagram != null && instagram.isNotEmpty) ...[
+                      _buildContactRow(Icons.photo_camera_outlined, instagram),
+                      const SizedBox(height: 12),
+                    ],
+                    if (facebook != null && facebook.isNotEmpty) ...[
+                      _buildContactRow(Icons.facebook, facebook),
+                      const SizedBox(height: 12),
+                    ],
+                    if (twitter != null && twitter.isNotEmpty) ...[
+                      _buildContactRow(Icons.close, twitter),
+                    ],
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildContactRow(IconData icon, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: AppColors.textSecondary, size: 14),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 12,
+              color: AppColors.primary,
+              height: 1.3,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildChefsNoteSection() {
     final quote = (restaurant.chefDetails != null && restaurant.chefDetails!.trim().isNotEmpty)
         ? '"${restaurant.chefDetails}"'
