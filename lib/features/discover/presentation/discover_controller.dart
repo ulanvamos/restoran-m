@@ -51,31 +51,33 @@ final restaurantTablesProvider = FutureProvider.autoDispose.family<List<Restaura
 });
 
 class ReelData {
+  final String id;
   final String videoUrl;
   final String restaurantId;
-  ReelData({required this.videoUrl, required this.restaurantId});
+  final String? caption;
+
+  ReelData({
+    required this.id,
+    required this.videoUrl, 
+    required this.restaurantId,
+    this.caption,
+  });
+
+  factory ReelData.fromJson(Map<String, dynamic> json) {
+    return ReelData(
+      id: json['id'] as String,
+      videoUrl: json['video_url'] as String,
+      restaurantId: json['restaurant_id'] as String,
+      caption: json['caption'] as String?,
+    );
+  }
 }
 
 final reelsProvider = FutureProvider<List<ReelData>>((ref) async {
-  final List<FileObject> files = await Supabase.instance.client
-      .storage
-      .from('restaurant-videos')
-      .list();
+  final response = await Supabase.instance.client
+      .from('restaurant_reels')
+      .select('*')
+      .order('created_at', ascending: false);
       
-  final List<ReelData> reels = [];
-  for (final file in files) {
-    if (file.name.endsWith('.mp4')) {
-      final restaurantId = file.name.replaceAll('.mp4', '');
-      final videoUrl = Supabase.instance.client
-          .storage
-          .from('restaurant-videos')
-          .getPublicUrl(file.name);
-          
-      reels.add(ReelData(
-        videoUrl: videoUrl,
-        restaurantId: restaurantId,
-      ));
-    }
-  }
-  return reels;
+  return (response as List).map((json) => ReelData.fromJson(json)).toList();
 });

@@ -126,7 +126,7 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
                     itemBuilder: (context, index) {
                       final reel = filteredReels[index];
                       final restaurant = restaurants.firstWhere((r) => r.id == reel.restaurantId);
-                      return ReelItem(restaurant: restaurant, videoUrl: reel.videoUrl);
+                      return ReelItem(restaurant: restaurant, reel: reel);
                     },
                   ),
                   Positioned(
@@ -258,9 +258,9 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
 
 class ReelItem extends StatefulWidget {
   final Restaurant restaurant;
-  final String videoUrl;
+  final ReelData reel;
 
-  const ReelItem({super.key, required this.restaurant, required this.videoUrl});
+  const ReelItem({super.key, required this.restaurant, required this.reel});
 
   @override
   State<ReelItem> createState() => _ReelItemState();
@@ -279,7 +279,7 @@ class _ReelItemState extends State<ReelItem> {
   }
 
   Future<void> _initVideo() async {
-    _videoController = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
+    _videoController = VideoPlayerController.networkUrl(Uri.parse(widget.reel.videoUrl));
     try {
       await _videoController.initialize();
       _videoController.setLooping(true);
@@ -444,9 +444,11 @@ class _ReelItemState extends State<ReelItem> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  widget.restaurant.description.isNotEmpty 
-                      ? widget.restaurant.description 
-                      : 'Modern Anadolu mutfağı ve zamansız bir gastronomi deneyimi.',
+                  (widget.reel.caption != null && widget.reel.caption!.isNotEmpty)
+                      ? widget.reel.caption!
+                      : (widget.restaurant.description.isNotEmpty 
+                          ? widget.restaurant.description 
+                          : 'Modern Anadolu mutfağı ve zamansız bir gastronomi deneyimi.'),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
