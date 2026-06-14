@@ -10,6 +10,8 @@ import '../../discover/domain/restaurant_model.dart';
 import 'profile_controller.dart';
 import 'settings_screen.dart';
 import 'favorites_screen.dart';
+import '../../payments/presentation/payment_cards_screen.dart'; // <--- NEW IMPORT
+import '../../support/presentation/support_chat_screen.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -69,6 +71,72 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
               const SizedBox(height: 16),
 
+              // Live Support Banner
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const SupportChatScreen()),
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withAlpha(50),
+                          blurRadius: 15,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withAlpha(30),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.support_agent, color: Colors.white, size: 28),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Canlı Destek',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontFamily: 'Manrope',
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Ekibimizle hemen iletişime geçin',
+                                style: TextStyle(
+                                  color: Colors.white.withAlpha(200),
+                                  fontFamily: 'Inter',
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
               // Menu Section
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -80,6 +148,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       label: 'Favorilerim',
                       onTap: () => Navigator.of(context).push(
                         MaterialPageRoute(builder: (_) => const FavoritesScreen()),
+                      ),
+                    ),
+                    _buildDivider(),
+                    // Ödeme Yöntemlerim
+                    _buildMenuItem(
+                      icon: Icons.credit_card,
+                      label: 'Ödeme Yöntemlerim',
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const PaymentCardsScreen()),
                       ),
                     ),
                     _buildDivider(),
@@ -189,17 +266,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               color: AppColors.primary,
             ),
           ),
-          const SizedBox(height: 6),
-          Text(
-            profile?.bio ?? 'Fine dining deneyimlerini keşfediyor',
-            style: const TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 13,
-              fontWeight: FontWeight.w300,
-              color: AppColors.textSecondary,
-              letterSpacing: 0.3,
+          if (profile?.bio != null && profile!.bio!.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              profile.bio!,
+              style: const TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 13,
+                fontWeight: FontWeight.w300,
+                color: AppColors.textSecondary,
+                letterSpacing: 0.3,
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -499,6 +578,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     if (confirmed == true) {
       await Supabase.instance.client.auth.signOut();
+      ref.invalidate(userProfileProvider);
+      ref.invalidate(favoriteRestaurantsProvider);
+      
       if (mounted) {
         Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
       }

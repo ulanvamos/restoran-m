@@ -7,28 +7,10 @@ import '../../../core/constants/app_text_styles.dart';
 import '../domain/restaurant_model.dart';
 import 'discover_controller.dart';
 import 'restaurant_detail_screen.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../profile/presentation/profile_controller.dart';
 
-enum LocationFilterMode { myLocation, selectedLocation, worldwide }
 
-class LocationFilterNotifier extends Notifier<LocationFilterMode> {
-  @override
-  LocationFilterMode build() => LocationFilterMode.worldwide;
-  void setMode(LocationFilterMode mode) => state = mode;
-}
-
-final locationFilterModeProvider = NotifierProvider<LocationFilterNotifier, LocationFilterMode>(
-  () => LocationFilterNotifier(),
-);
-
-class SelectedCityNotifier extends Notifier<String> {
-  @override
-  String build() => 'Bursa';
-  void setCity(String city) => state = city;
-}
-
-final selectedCityProvider = NotifierProvider<SelectedCityNotifier, String>(
-  () => SelectedCityNotifier(),
-);
 
 class ReelsScreen extends ConsumerStatefulWidget {
   const ReelsScreen({super.key});
@@ -204,7 +186,7 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
               ),
               ListTile(
                 leading: const Icon(Icons.public, color: AppColors.primary),
-                title: const Text('Worldwide (Tüm Dünya)', style: TextStyle(color: AppColors.primary)),
+                title: const Text('Tümü', style: TextStyle(color: AppColors.primary)),
                 onTap: () {
                   ref.read(locationFilterModeProvider.notifier).setMode(LocationFilterMode.worldwide);
                   Navigator.pop(context);
@@ -270,7 +252,6 @@ class _ReelItemState extends State<ReelItem> {
   late VideoPlayerController _videoController;
   bool _isPlaying = true;
   bool _isError = false;
-  bool _isFavorite = false;
 
   @override
   void initState() {
@@ -374,17 +355,40 @@ class _ReelItemState extends State<ReelItem> {
                     child: Icon(Icons.restaurant, color: AppColors.background, size: 20),
                   ),
                 ),
-                IconButton(
-                  icon: Icon(
-                    _isFavorite ? Icons.favorite : Icons.favorite_border, 
-                    color: _isFavorite ? Colors.red : AppColors.background, 
-                    size: 28
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _isFavorite = !_isFavorite;
-                    });
-                  },
+                Consumer(
+                  builder: (context, ref, _) {
+                    final favsAsync = ref.watch(favoriteRestaurantsProvider);
+                    final isFav = favsAsync.value?.any((r) => r.id == widget.restaurant.id) ?? false;
+                    
+                    return IconButton(
+                      icon: Icon(
+                        isFav ? Icons.favorite : Icons.favorite_border, 
+                        color: isFav ? Colors.red : AppColors.background, 
+                        size: 28
+                      ),
+                      onPressed: () async {
+                        try {
+                          final supabase = Supabase.instance.client;
+                          final userId = supabase.auth.currentUser?.id;
+                          if (userId == null) return;
+                          
+                          if (isFav) {
+                            await supabase.from('favorites').delete()
+                              .eq('user_id', userId)
+                              .eq('restaurant_id', widget.restaurant.id);
+                          } else {
+                            await supabase.from('favorites').insert({
+                              'user_id': userId,
+                              'restaurant_id': widget.restaurant.id,
+                            });
+                          }
+                          ref.invalidate(favoriteRestaurantsProvider);
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Hata: $e')));
+                        }
+                      },
+                    );
+                  }
                 ),
               ],
             ),

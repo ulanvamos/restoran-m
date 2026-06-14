@@ -7,6 +7,7 @@ import '../../../core/constants/app_text_styles.dart';
 import '../domain/restaurant_model.dart';
 import 'discover_controller.dart';
 import 'restaurant_detail_screen.dart';
+import 'search_screen.dart';
 
 class MapScreen extends ConsumerStatefulWidget {
   const MapScreen({super.key});
@@ -206,6 +207,16 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   }
 
   Widget _buildTopAppBar() {
+    final selectedCity = ref.watch(selectedCityProvider);
+    final mode = ref.watch(locationFilterModeProvider);
+    
+    String displayText = 'TÜMÜ';
+    if (mode == LocationFilterMode.myLocation) {
+      displayText = 'MEVCUT KONUMUM';
+    } else if (mode == LocationFilterMode.selectedLocation) {
+      displayText = selectedCity.toUpperCase();
+    }
+
     return Container(
       padding: EdgeInsets.only(
         top: MediaQuery.of(context).padding.top + 16,
@@ -219,35 +230,148 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           bottom: BorderSide(color: AppColors.divider.withValues(alpha: 0.5)),
         ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.restaurant, color: AppColors.primary),
-          Column(
-            mainAxisSize: MainAxisSize.min,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Keşif Haritası',
-                style: AppTextStyles.headline.copyWith(
-                  fontSize: 18,
-                  letterSpacing: -0.5,
-                  fontWeight: FontWeight.w800,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Keşif Haritası',
+                      style: AppTextStyles.headline.copyWith(
+                        fontSize: 18,
+                        letterSpacing: -0.5,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    Text(
+                      displayText,
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.5,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              Text(
-                'Bursa, Nilüfer'.toUpperCase(),
-                style: const TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.5,
-                  color: AppColors.textSecondary,
+              IconButton(
+                icon: const Icon(Icons.tune, color: AppColors.primary),
+                onPressed: () {
+                  _showFilterDialog();
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Search Bar
+          GestureDetector(
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const SearchScreen()));
+            },
+            child: Container(
+              height: 44,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(9999),
+                border: Border.all(color: AppColors.divider.withValues(alpha: 0.3)),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  Icon(Icons.search, color: AppColors.textSecondary.withValues(alpha: 0.6), size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Restoran, şef veya mutfak ara',
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        color: AppColors.textSecondary.withValues(alpha: 0.6),
+                        fontSize: 12,
+                        letterSpacing: -0.2,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showFilterDialog() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Harita Filtreleri',
+                    style: AppTextStyles.headline.copyWith(fontSize: 20),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const Divider(),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.star, color: Colors.amber),
+                title: const Text('En Yüksek Puanlılar'),
+                trailing: Switch(
+                  value: true,
+                  onChanged: (val) {},
+                  activeColor: AppColors.primary,
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.location_on, color: AppColors.primary),
+                title: const Text('Şu An Açık Olanlar'),
+                trailing: Switch(
+                  value: false,
+                  onChanged: (val) {},
+                  activeColor: AppColors.primary,
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('Uygula', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
               ),
             ],
           ),
-          const Icon(Icons.tune, color: AppColors.primary),
-        ],
+        ),
       ),
     );
   }

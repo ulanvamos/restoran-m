@@ -7,6 +7,8 @@ import '../../../core/constants/app_text_styles.dart';
 import '../domain/restaurant_model.dart';
 import '../domain/table_model.dart';
 import 'discover_controller.dart';
+import 'floor_plan_selector.dart'; // <--- NEW IMPORT
+import 'checkout_screen.dart'; // <--- NEW IMPORT
 
 class ReservationScreen extends ConsumerStatefulWidget {
   final Restaurant restaurant;
@@ -21,7 +23,7 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   int _guestCount = 2;
-  RestaurantTable? _selectedTable;
+  SelectableTable? _selectedTable; // <--- CHANGED TYPE
   bool _wantsVipTransport = false;
   bool _wantsPreOrder = false;
   bool _isSubmitting = false;
@@ -115,9 +117,46 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
       // Assuming user_id is nullable or we have a session
       final user = supabase.auth.currentUser;
       
+      // Check if reservation fee applies
+      if (_selectedTable!.reservationFee > 0) {
+        // Navigate to payment
+        if (mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (ctx) => CheckoutScreen(
+                restaurantId: widget.restaurant.id,
+                restaurantName: widget.restaurant.name,
+                tableNumber: _selectedTable!.number.toString(),
+                sectionName: _selectedTable!.sectionId, // We can resolve name later
+                amount: _selectedTable!.reservationFee.toDouble(),
+                reservationData: {
+                  'restaurant_id': widget.restaurant.id,
+                  'user_id': user?.id,
+                  'guest_name': user?.userMetadata?['full_name'] ?? 'Misafir',
+                  'guest_phone': user?.userMetadata?['phone_number'] ?? '',
+                  'reservation_date': dateStr,
+                  'start_time': startTime,
+                  'end_time': endTime,
+                  'guest_count': _guestCount,
+                  'status': 'pending',
+                  'wants_vip_transport': _wantsVipTransport,
+                  'wants_pre_order': _wantsPreOrder,
+                  'selected_table_name': 'Masa ${_selectedTable!.number}',
+                  'table_id': _selectedTable!.id,
+                },
+              ),
+            ),
+          );
+        }
+        return;
+      }
+
       await supabase.from('reservations').insert({
         'restaurant_id': widget.restaurant.id,
         if (user != null) 'user_id': user.id,
+        'guest_name': user?.userMetadata?['full_name'] ?? 'Misafir',
+        'guest_phone': user?.userMetadata?['phone_number'] ?? '',
         'reservation_date': dateStr,
         'start_time': startTime,
         'end_time': endTime,
@@ -125,7 +164,7 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
         'status': 'pending',
         'wants_vip_transport': _wantsVipTransport,
         'wants_pre_order': _wantsPreOrder,
-        'selected_table_name': 'Masa ${_selectedTable!.tableNumber} (${_selectedTable!.section})',
+        'selected_table_name': 'Masa ${_selectedTable!.number}',
         'table_id': _selectedTable!.id,
       });
 
@@ -275,118 +314,10 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    ref.watch(restaurantTablesProvider(widget.restaurant.id)).when(
-                      data: (tables) {
-                        if (tables.isEmpty) {
-                          return const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 24),
-                            child: Text(
-                              'Rezervasyon yapılabilecek masa bulunamadı.',
-                              style: TextStyle(
-                                fontFamily: 'Inter',
-                                fontSize: 13,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          );
-                        }
-                        return GridView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 3,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                            childAspectRatio: 1.1,
-                          ),
-                          itemCount: tables.length,
-                          itemBuilder: (context, index) {
-                            final table = tables[index];
-                            final isSelected = _selectedTable?.id == table.id;
-                            final isOccupiedOrReserved = table.status == 'occupied' || table.status == 'reserved';
-                            
-                            return GestureDetector(
-                              onTap: isOccupiedOrReserved ? null : () {
-                                setState(() {
-                                  _selectedTable = table;
-                                });
-                              },
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                decoration: BoxDecoration(
-                                  color: isSelected 
-                                      ? AppColors.primary 
-                                      : (isOccupiedOrReserved ? AppColors.divider.withAlpha(128) : AppColors.background),
-                                  border: Border.all(
-                                    color: isSelected 
-                                        ? AppColors.primary 
-                                        : (isOccupiedOrReserved ? Colors.transparent : AppColors.divider.withAlpha(100)),
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                alignment: Alignment.center,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      'Masa ${table.tableNumber}',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontFamily: 'Manrope',
-                                        fontSize: 13,
-                                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                                        color: isSelected 
-                                            ? AppColors.background 
-                                            : (isOccupiedOrReserved ? AppColors.textSecondary.withAlpha(120) : AppColors.primary),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      '${table.capacity} Kişilik',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontFamily: 'Inter',
-                                        fontSize: 9,
-                                        color: isSelected 
-                                            ? AppColors.background.withAlpha(200) 
-                                            : (isOccupiedOrReserved ? AppColors.textSecondary.withAlpha(120) : AppColors.textSecondary),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      table.section.toUpperCase(),
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontFamily: 'Inter',
-                                        fontSize: 8,
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: 0.5,
-                                        color: isSelected 
-                                            ? AppColors.background.withAlpha(180) 
-                                            : (isOccupiedOrReserved ? AppColors.textSecondary.withAlpha(120) : AppColors.primary.withAlpha(150)),
-                                      ),
-                                    ),
-                                    if (isOccupiedOrReserved) ...[
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        table.status == 'occupied' ? 'DOLU' : 'REZERVE',
-                                        style: const TextStyle(
-                                          fontFamily: 'Inter',
-                                          fontSize: 8,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.red,
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                      loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
-                      error: (err, _) => const Text('Masalar yüklenemedi.', style: TextStyle(color: Colors.red)),
+                    FloorPlanSelector(
+                      restaurantId: widget.restaurant.id,
+                      selectedTable: _selectedTable,
+                      onTableSelected: (t) => setState(() => _selectedTable = t),
                     ),
                     const SizedBox(height: 40),
 

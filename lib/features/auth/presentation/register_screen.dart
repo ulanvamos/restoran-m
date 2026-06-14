@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../profile/presentation/anamnesis_screen.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/constants/app_colors.dart';
@@ -35,17 +37,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _isLoading = true);
     
     try {
-      await Supabase.instance.client.auth.signUp(
+      final res = await Supabase.instance.client.auth.signUp(
         email: _emailController.text.trim(),
         password: _passwordController.text,
         data: {'full_name': _nameController.text.trim()}, // Trigger will use this
       );
       
+      // If not automatically logged in, try to log in
+      if (res.session == null) {
+        await Supabase.instance.client.auth.signInWithPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
+      }
+      
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Kayıt başarılı! Giriş yapabilirsiniz.')),
+        const SnackBar(content: Text('Kayıt başarılı! Lütfen profilinizi tamamlayın.')),
       );
-      Navigator.of(context).pop(); // Go back to login
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (ctx) => const AnamnesisScreen()),
+      );
       
     } on AuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -119,7 +132,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 _buildInputField(
                   controller: _nameController,
                   hintText: 'İsminizi giriniz',
-                  validator: (val) => val == null || val.isEmpty ? 'Ad soyad gerekli' : null,
+                  validator: (val) => val == null || val.isEmpty ? 'Lütfen adınızı ve soyadınızı giriniz.' : null,
                 ).animate().fade(delay: 450.ms).slideY(begin: 0.1),
 
                 const SizedBox(height: 24),
@@ -131,7 +144,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _emailController,
                   hintText: 'ornek@mail.com',
                   keyboardType: TextInputType.emailAddress,
-                  validator: (val) => val == null || !val.contains('@') ? 'Geçerli e-posta giriniz' : null,
+                  validator: (val) => val == null || !val.contains('@') ? 'Lütfen geçerli bir e-posta adresi giriniz.' : null,
                 ).animate().fade(delay: 550.ms).slideY(begin: 0.1),
 
                 const SizedBox(height: 24),
@@ -143,7 +156,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _passwordController,
                   hintText: '••••••••',
                   obscureText: true,
-                  validator: (val) => val != null && val.length < 6 ? 'En az 6 karakter olmalı' : null,
+                  validator: (val) => val != null && val.length < 6 ? 'Şifreniz en az 6 karakterden oluşmalıdır.' : null,
                 ).animate().fade(delay: 650.ms).slideY(begin: 0.1),
 
                 const SizedBox(height: 24),
@@ -156,7 +169,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   hintText: '••••••••',
                   obscureText: true,
                   validator: (val) {
-                    if (val != _passwordController.text) return 'Şifreler eşleşmiyor';
+                    if (val != _passwordController.text) return 'Girdiğiniz şifreler eşleşmiyor, lütfen kontrol ediniz.';
                     return null;
                   },
                 ).animate().fade(delay: 750.ms).slideY(begin: 0.1),

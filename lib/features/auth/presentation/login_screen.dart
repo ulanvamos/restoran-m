@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../main/presentation/main_screen.dart';
+import '../../profile/presentation/anamnesis_screen.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -40,9 +41,26 @@ class _LoginScreenState extends State<LoginScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
+      final userId = Supabase.instance.client.auth.currentUser?.id;
       
-      // Navigate to Main Screen (Restoran Keşif) when built
       if (!mounted) return;
+
+      if (userId != null) {
+        final anamnesisResponse = await Supabase.instance.client
+            .from('customer_anamnesis')
+            .select()
+            .eq('user_id', userId)
+            .maybeSingle();
+
+        final prefs = anamnesisResponse?['preferences'];
+        if (prefs == null || prefs['has_mandatory'] != true) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const AnamnesisScreen()),
+          );
+          return;
+        }
+      }
+
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const MainScreen()),
       );

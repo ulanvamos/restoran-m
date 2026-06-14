@@ -10,6 +10,8 @@ class UserProfile {
   final int? age;
   final String? gender;
   final String? bio;
+  final String? city;
+  final DateTime? birthDate;
   final DateTime createdAt;
 
   UserProfile({
@@ -20,6 +22,8 @@ class UserProfile {
     this.age,
     this.gender,
     this.bio,
+    this.city,
+    this.birthDate,
     required this.createdAt,
   });
 
@@ -32,6 +36,8 @@ class UserProfile {
       age: json['age'] as int?,
       gender: json['gender'] as String?,
       bio: json['bio'] as String?,
+      city: json['city'] as String?,
+      birthDate: json['birth_date'] != null ? DateTime.parse(json['birth_date'] as String) : null,
       createdAt: DateTime.parse(json['created_at'] as String),
     );
   }
@@ -70,7 +76,9 @@ final favoriteRestaurantsProvider = FutureProvider<List<Restaurant>>((ref) async
   final response = await supabase
       .from('restaurants')
       .select()
-      .inFilter('id', restaurantIds);
+      .inFilter('id', restaurantIds)
+      .eq('is_verified', true)
+      .eq('is_banned', false);
 
   return (response as List).map((json) => Restaurant.fromJson(json)).toList();
 });

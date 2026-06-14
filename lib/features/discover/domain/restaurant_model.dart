@@ -20,6 +20,8 @@ class Restaurant {
   final String? instagram;
   final String? facebook;
   final String? twitter;
+  final bool isSponsored;
+  final String? city;
 
   Restaurant({
     required this.id,
@@ -43,6 +45,8 @@ class Restaurant {
     this.instagram,
     this.facebook,
     this.twitter,
+    this.isSponsored = false,
+    this.city,
   });
 
   factory Restaurant.fromJson(Map<String, dynamic> json) {
@@ -68,6 +72,8 @@ class Restaurant {
       instagram: json['instagram'] as String?,
       facebook: json['facebook'] as String?,
       twitter: json['twitter'] as String?,
+      isSponsored: json['is_sponsored'] as bool? ?? false,
+      city: json['city'] as String?,
     );
   }
 }
