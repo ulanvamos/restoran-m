@@ -1,0 +1,78 @@
+name: Build Admin App
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'restoranim_admin/lib/**'
+      - 'restoranim_admin/pubspec.yaml'
+      - '.github/workflows/build_admin_app.yml'
+  workflow_dispatch:
+
+jobs:
+  build_android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./restoranim_admin
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          
+      - name: Install Dependencies
+        run: flutter pub get
+        
+      - name: Build APK
+        run: flutter build apk --release
+        
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-app-android-apk
+          path: restoranim_admin/build/app/outputs/flutter-apk/app-release.apk
+
+  build_ios:
+    name: Build iOS IPA (Unsigned)
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: ./restoranim_admin
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          
+      - name: Install Dependencies
+        run: flutter pub get
+        
+      - name: Build iOS (No Codesign)
+        run: flutter build ios --release --no-codesign
+        
+      - name: Package into IPA
+        run: |
+          mkdir -p Payload
+          mv build/ios/iphoneos/Runner.app Payload/
+          zip -r admin_app_unsigned.ipa Payload
+          
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-app-ios-ipa
+          path: restoranim_admin/admin_app_unsigned.ipa
