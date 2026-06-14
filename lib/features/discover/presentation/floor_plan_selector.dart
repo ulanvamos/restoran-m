@@ -198,13 +198,16 @@ class _FloorPlanSelectorState extends ConsumerState<FloorPlanSelector> {
             // Fixed Canvas Area
             AspectRatio(
               aspectRatio: canvasAspectRatio,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.divider.withOpacity(0.5), width: 4),
-                  boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 8)],
-                ),
+              child: InteractiveViewer(
+                minScale: 0.8,
+                maxScale: 4.0,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppColors.divider.withOpacity(0.5), width: 4),
+                    boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 8)],
+                  ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(4),
                   child: LayoutBuilder(
@@ -245,6 +248,7 @@ class _FloorPlanSelectorState extends ConsumerState<FloorPlanSelector> {
                   ),
                 ),
               ),
+            ),
             ),
           ],
         );
@@ -299,9 +303,27 @@ class _CustomerTableWidget extends StatelessWidget {
       );
     }
 
-    Color borderColor = isSelected ? AppColors.primary : (isAvailable ? Colors.grey.shade400 : Colors.red.shade300);
-    Color bgColor = isSelected ? AppColors.primary.withOpacity(0.1) : (isAvailable ? Colors.white : Colors.red.shade50);
-    Color textColor = isSelected ? AppColors.primary : (isAvailable ? Colors.black87 : Colors.red.shade400);
+    Color borderColor;
+    Color bgColor;
+    Color textColor;
+
+    if (isSelected) {
+      borderColor = AppColors.primary;
+      bgColor = AppColors.primary.withOpacity(0.1);
+      textColor = AppColors.primary;
+    } else if (!isAvailable) {
+      borderColor = Colors.red.shade400;
+      bgColor = Colors.red.shade100;
+      textColor = Colors.red.shade700;
+    } else if (table.reservationFee > 0) {
+      borderColor = Colors.blue.shade400;
+      bgColor = Colors.blue.shade50;
+      textColor = Colors.blue.shade700;
+    } else {
+      borderColor = Colors.grey.shade400;
+      bgColor = Colors.white;
+      textColor = Colors.black87;
+    }
 
     return Container(
       decoration: BoxDecoration(

@@ -261,7 +261,7 @@ class RestaurantDetailScreen extends ConsumerWidget {
                   Expanded(
                     child: Text(
                       restaurant.address.toUpperCase(),
-                      maxLines: 1,
+                      maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontFamily: 'Inter',
@@ -294,7 +294,7 @@ class RestaurantDetailScreen extends ConsumerWidget {
         _buildSectionTitle('Konum'),
         const SizedBox(height: 20),
         Container(
-          height: 140,
+          height: 160,
           width: double.infinity,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
@@ -310,7 +310,7 @@ class RestaurantDetailScreen extends ConsumerWidget {
               children: [
                 TileLayer(
                   urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  userAgentPackageName: 'com.example.app',
+                  userAgentPackageName: 'com.restoranim.app',
                 ),
                 MarkerLayer(
                   markers: [

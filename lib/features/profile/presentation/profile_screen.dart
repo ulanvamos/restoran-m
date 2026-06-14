@@ -259,7 +259,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
           const SizedBox(height: 20),
           Text(
-            profile?.fullName ?? 'Kullanıcı',
+            profile?.fullName?.isNotEmpty == true 
+                ? profile!.fullName! 
+                : (Supabase.instance.client.auth.currentUser?.userMetadata?['full_name'] ?? 
+                   Supabase.instance.client.auth.currentUser?.email ?? 
+                   'Kullanıcı'),
             style: AppTextStyles.headline.copyWith(
               fontSize: 26,
               letterSpacing: -0.5,

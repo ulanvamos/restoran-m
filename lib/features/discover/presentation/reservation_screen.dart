@@ -106,17 +106,31 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
       // Create start time and end time (default 2 hours)
       final startTime = '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}:00';
       
-      int endHour = (_selectedTime!.hour + 2) % 24;
-      final endTime = '${endHour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}:00';
+      int endHour = _selectedTime!.hour + 2;
+      String endTime;
+      if (endHour >= 24) {
+        endTime = '23:59:00';
+      } else {
+        endTime = '${endHour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}:00';
+      }
       
       final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate!);
 
       final supabase = Supabase.instance.client;
       
-      // Get current user if logged in, otherwise mock a UUID or leave null
-      // Assuming user_id is nullable or we have a session
+      // Check if user is logged in
       final user = supabase.auth.currentUser;
-      
+      if (user == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Rezervasyon yapmak için lütfen hesabınıza giriş yapın.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }      
       // Check if reservation fee applies
       if (_selectedTable!.reservationFee > 0) {
         // Navigate to payment

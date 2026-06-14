@@ -80,13 +80,16 @@ class _BookingsScreenState extends ConsumerState<BookingsScreen> {
                                 : null,
                           ),
                           child: Center(
-                            child: Text(
-                              'Gelecek Rezervasyonlar',
-                              style: TextStyle(
-                                fontFamily: 'Inter',
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: _showFuture ? AppColors.background : AppColors.textSecondary,
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                'Gelecek Rezervasyonlar',
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: _showFuture ? AppColors.background : AppColors.textSecondary,
+                                ),
                               ),
                             ),
                           ),
@@ -107,13 +110,16 @@ class _BookingsScreenState extends ConsumerState<BookingsScreen> {
                                 : null,
                           ),
                           child: Center(
-                            child: Text(
-                              'Geçmiş Rezervasyonlar',
-                              style: TextStyle(
-                                fontFamily: 'Inter',
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: !_showFuture ? AppColors.background : AppColors.textSecondary,
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                'Geçmiş Rezervasyonlar',
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: !_showFuture ? AppColors.background : AppColors.textSecondary,
+                                ),
                               ),
                             ),
                           ),
@@ -327,7 +333,7 @@ class _BookingsScreenState extends ConsumerState<BookingsScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             // Pre-order
-                            if (_showFuture)
+                            if (_showFuture && reservation.wantsPreOrder)
                               _buildActionButton(
                                 'ÖN SİPARİŞ',
                                 AppColors.primary,
